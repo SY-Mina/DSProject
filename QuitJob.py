@@ -45,7 +45,7 @@ def bar_plot(variable):
     plt.xticks(varValue.index, varValue.index.values)
     plt.ylabel("Frequency")
     plt.title(variable)
-    plt.show()
+    #plt.show()
     print("{}:\n{}".format(variable, varValue))
 
 for c in categorical_list:
@@ -65,8 +65,8 @@ def plot_hist(variable):
     plt.title("{} distribution with hist".format(variable))
     plt.show()
 
-for n in numerical_int64_list:
-    plot_hist(n)
+# for n in numerical_int64_list:
+#     plot_hist(n)
 
 numerical_float64 = (dataset.dtypes == "float64")
 numerical_float64_list = list(numerical_float64[numerical_float64].index)
@@ -74,8 +74,8 @@ numerical_float64_list = list(numerical_float64[numerical_float64].index)
 print("Numerical variables:")
 print(numerical_float64_list)
 
-for n in numerical_float64_list:
-    plot_hist(n)
+# for n in numerical_float64_list:
+#     plot_hist(n)
 
 
 '''
@@ -163,7 +163,17 @@ labelEncoder = LabelEncoder()
 for col in cat_cols:
     dataset[col] = labelEncoder.fit_transform(dataset[col])
 
+print("<categorical encoding>")
 print(dataset.head(15))
+
+# scaling
+standard = StandardScaler()
+standard_data = dataset
+standard_data = standard.fit_transform(standard_data)
+print("스케일 조정 전 features Min value: \n {}".format(dataset.min(axis=0)))
+print("스케일 조정 전 features Max value: \n {}".format(dataset.max(axis=0)))
+print("스케일 조정 후 features Min value: \n {}".format(standard_data.min(axis=0)))
+print("스케일 조정 후 features Max value: \n {}".format(standard_data.max(axis=0)))
 
 
 
