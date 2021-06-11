@@ -2,7 +2,7 @@
 
 **user manual / specification** 
 
-\---------------------------
+--------------------------------------------------------------------------------------------
 
 : combination of numerical data scaling and categorical data encoding for a machine learning algorithm
 
