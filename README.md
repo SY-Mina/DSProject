@@ -6,13 +6,18 @@
 
 : combination of numerical data scaling and categorical data encoding for a machine learning algorithm
 
+* use (Input)
+  ![image](https://user-images.githubusercontent.com/69418829/121663500-725bc000-cae1-11eb-981f-2caaa1494d24.png)
 
+* result (Output)
+  
 
 * Encoding includes label encoder and ordinary encoder.
   Scaling includes standard scaling, minmax scaling, and robustscaling.
   Algorithms include decision tree, random forest, and knn.
 
 * Used Methods : cal_score, encoding, scaling, algorithmmethod, DecisionTree, random_forest, KNNClassifier
+
 * Method Details
 
 
