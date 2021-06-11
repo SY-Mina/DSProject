@@ -12,7 +12,8 @@
   Scaling includes standard scaling, minmax scaling, and robustscaling.
   Algorithms include decision tree, random forest, and knn.
 
-Used Methods : cal_score, encoding, scaling, algorithmmethod, DecisionTree, random_forest, KNNClassifier
+* Used Methods : cal_score, encoding, scaling, algorithmmethod, DecisionTree, random_forest, KNNClassifier
+
 
 | **Method**                             | **Description**                                              |
 | :------------------------------------- | :----------------------------------------------------------- |
