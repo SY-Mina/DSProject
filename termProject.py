@@ -167,33 +167,34 @@ def label_encode(X):
 
 my_encoder = FunctionTransformer(label_encode)
 encoded = my_encoder.fit_transform(dataset)
-#도시 개발 지수에 도시에 대한 정보가 나와있기 때문에 도시 id는 필요없음
+# No city id is required because the city development index contains information about the city
 dataset.drop(['city'], axis=1, inplace=True)
 dataset.drop(['enrollee_id'], axis=1, inplace=True)
 print(dataset)
 
-#나머지 데이터들 인코딩
+# remaining data encoding
 cat_cols = ['gender', 'enrolled_university', 'major_discipline', 'company_type']
 
-def encoding():
-    label = dataset
+def encoding(encode):
+    encode_data = dataset
     ordinal = dataset
 
-    #LabelEncoder
-    labelEncoder = LabelEncoder()
+    if encode=="label":
+        # LabelEncoder
+        labelEncoder = LabelEncoder()
+        for col in cat_cols:
+            encode_data[col] = labelEncoder.fit_transform(encode_data[col])
 
-    for col in cat_cols:
-        label[col] = labelEncoder.fit_transform(label[col])
-
+    else:
     #OrdinalEncoder
-    ordinaryEncoder = OrdinalEncoder()
-    for col in cat_cols:
-        ordinalCol = ordinal[col].values.reshape(-1,1)
-        ordinaryEncoder.fit(ordinalCol)
-        ordinal[col] = ordinaryEncoder.transform(ordinalCol)
-        print(ordinal[col])
+        ordinaryEncoder = OrdinalEncoder()
+        for col in cat_cols:
+            ordinalCol = encode_data[col].values.reshape(-1,1)
+            ordinaryEncoder.fit(ordinalCol)
+            encode_data[col] = ordinaryEncoder.transform(ordinalCol)
+            #print(ordinal[col])
 
-    return label, ordinal
+    return encode_data
 
 # print("<categorical encoding>")
 # label_data, ordinal_data = encoding()
@@ -203,25 +204,42 @@ def encoding():
 # print(ordinal_data.head(15))
 
 
-def scaling(df):
-    #StandardScaler
-    standard = StandardScaler()
-    standard_data = df
-    standard_data = standard.fit_transform(standard_data)
-    #MinMaxScaler
-    minmax = MinMaxScaler()
-    minmax_data = df
-    minmax_data = minmax.fit_transform(minmax_data)
-    #RobustScaler
-    robust = RobustScaler()
-    robust_data = df
-    robust_data = robust.fit_transform(robust_data)
-    return standard_data,minmax_data,robust_data
-
-
-# label_standard_data,label_minmax_data,label_robust_data=scaling(label_data)
-# ordinal_standard_data, ordinal_minmax_data, ordinal_robust_data=scaling(ordinal_data)
-
+def scaling(encode,scaler):
+    if scaler == "standard":
+        #StandardScaler
+        standard = StandardScaler()
+        scaler_data = encode
+        scaler_data = standard.fit_transform(scaler_data)
+        # Train-Test Split
+        scaler_data = pd.DataFrame(scaler_data, columns=['city_development_index', 'gender',
+                                                                         'relevent_experience', 'enrolled_university',
+                                                                         'education_level', 'major_discipline',
+                                                                         'experience', 'company_size', 'company_type',
+                                                                         'last_new_job', 'training_hours', 'target'])
+    elif scaler == "minmax":
+        #MinMaxScaler
+        minmax = MinMaxScaler()
+        scaler_data = encode
+        scaler_data = minmax.fit_transform(scaler_data)
+        # Train-Test Split
+        scaler_data = pd.DataFrame(scaler_data,
+                                         columns=['city_development_index', 'gender', 'relevent_experience',
+                                                  'enrolled_university', 'education_level', 'major_discipline',
+                                                  'experience', 'company_size', 'company_type', 'last_new_job',
+                                                  'training_hours', 'target'])
+    elif scaler == "robust":
+        #RobustScaler
+        robust = RobustScaler()
+        #scaler_data = encode
+        #scaler_data = robust.fit_transform(scaler_data)
+        encode = robust.fit_transform(encode)
+        # Train-Test Split
+        encode = pd.DataFrame(encode,
+                                         columns=['city_development_index', 'gender', 'relevent_experience',
+                                                  'enrolled_university', 'education_level', 'major_discipline',
+                                                  'experience', 'company_size', 'company_type', 'last_new_job',
+                                                  'training_hours', 'target'])
+    return encode
 
 
 ###########################
@@ -232,11 +250,9 @@ def DecisionTree(X,y):
     y = y.astype(int)
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=4)
-    dtc.fit(X_train,y_train)
-    #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    #print(classification_report(y_test, dtc.predict(X_test)))
+    dtc.fit(X_train, y_train)
     return accuracy_score(y_test, dtc.predict(X_test))
-    #print('The accuracy score with using the decision tree classifier is :',accuracy_score(y_test, dtc.predict(X_test)))
+
 #############################
 def random_forest(X, y):
     X = X.astype(int)
@@ -248,12 +264,11 @@ def random_forest(X, y):
     random_forest_model = RandomForestClassifier(n_estimators=300, max_depth=10, random_state=22)
     random_forest_model.fit(X_train, y_train)
     y_pred_random_forest = random_forest_model.predict(X_test)
-    cm_random_forest = confusion_matrix(y_pred_random_forest, y_test)
+    # cm_random_forest = confusion_matrix(y_pred_random_forest, y_test)
     acc_random_forest = accuracy_score(y_test, y_pred_random_forest)
-    # print("Random Forest Confusion Matrix: ", cm_random_forest)
-    # print("Random Forest ACC: ", acc_random_forest)
+
     return acc_random_forest
-############################
+
 ###########################
 def KNNClassifier(X,y):
     #float -> int
@@ -269,7 +284,88 @@ def KNNClassifier(X,y):
     # score = knn.score(X_test, y_test)
 
     return accuracy_score(y_test, knn.predict(X_test))
-    #print('The accuracy score with using the decision tree classifier is :',accuracy_score(y_test, dtc.predict(X_test)))
+
+
+def algorithmmethod(algorithm, X, y):
+    score = 0
+
+    if algorithm == "decision":
+        score = DecisionTree(X,y)
+    elif algorithm == "random":
+        score = random_forest(X,y)
+    elif algorithm == "knn":
+        score = KNNClassifier(X,y)
+
+    return score
+
+
+#####################################################
+def cal_score(encode, scaler, algorithm):
+    encode = encoding(encode)
+    #print("encode:",encode)
+    scaler = scaling(encode,scaler)
+    #print("scler:",scaler)
+    X = scaler.drop(labels="target", axis=1)
+    y = scaler["target"]
+    score = algorithmmethod(algorithm, X, y)
+    #print("score:",score)
+    return score
+
+
+####################### <open source> ##############################
+def openSource(encode,scaler,algorithm):
+    #
+    labelEncoder = LabelEncoder()
+    ordinalEncoder = OrdinalEncoder()
+    #
+    standard = StandardScaler()
+    minmax = MinMaxScaler()
+    robust = RobustScaler()
+    #
+    decision = DecisionTreeClassifier()
+    random = RandomForestClassifier(n_estimators=300, max_depth=10, random_state=22)
+    knn = KNeighborsClassifier(n_neighbors=3)
+    #
+
+    compare = []
+    encode_list = []
+    scaler_list = []
+    algorithm_list = []
+    for encode2 in encode:
+        for scaler2 in scaler:
+            for algorithm2 in algorithm:
+                score = cal_score(encode2,scaler2,algorithm2)
+                compare.append(score)
+                algorithm_list.append(algorithm2)
+                encode_list.append(encode2)
+                scaler_list.append(scaler2)
+
+    ############# best combination #############
+    max = 0
+    index_value = 0
+    for score in compare:
+        if max < score:
+            max = score
+            index_value = compare.index(max)
+
+    print("best combination:", encode_list[index_value], "+", scaler_list[index_value], "+", algorithm_list[index_value])
+    print("accurcy_score_max:", max)
+
+    return encode_list[index_value], scaler_list[index_value], algorithm_list[index_value]
+###################################################################
+
+
+############################ <Main> #################################
+encode = ['label', 'ordinal']
+scaler = ['standard', 'minmax', 'robust']
+algorithm = ['decision', 'random', 'knn']
+
+result_en, result_sc, result_al=openSource(encode,scaler,algorithm)
+
+#############################################################################
+
+
+
 
 # Grid Search- Evaluation (Hyperparameter Tunning)
 def Grid_Search(X_train, X_test, y_train, y_test):
@@ -319,116 +415,21 @@ def StratKFold(model, X, y):
 
 
 # Grid Search- Evaluation (Hyperparameter Tunning)
-def Grid_Search(X_train, X_test, y_train, y_test):
-    param_grid = {'C': [0.001, 0.01, 0.1, 1, 10, 100], 'gamma': [0.001, 0.01, 0.1, 1, 10, 100]}
-    grid_search = GridSearchCV(SVC(), param_grid, cv=5, return_train_score=True)
+def Grid_Search(model, X_train, X_test, y_train, y_test):
+    rf_param_grid = {
+        'n_estimators': [10, 30, 50, 70, 100],
+        'max_depth': [6, 8, 10, 12],
+        'min_samples_leaf': [3, 5, 7, 10],
+        'min_samples_split': [2, 3, 5, 10]
+    }
+    grid_search = GridSearchCV(model, rf_param_grid, cv=5, return_train_score=True)
     grid_search.fit(X_train, y_train)
     print("Grid Search test score: ", grid_search.score(X_test, y_test))
     print("Best Parameters: ", grid_search.best_params_)
     print("Best Score: ", grid_search.best_score_)
 
-def open():
-    ##
-    print("<categorical encoding>")
-    label_data, ordinal_data = encoding()
-    print("Label Encoding")
-    print(label_data.head(15))
-    print("Ordinary Encoding")
-    print(ordinal_data.head(15))
-    ##
-    label_standard_data, label_minmax_data, label_robust_data = scaling(label_data)
-    ordinal_standard_data, ordinal_minmax_data, ordinal_robust_data = scaling(ordinal_data)
-    ##
-    # Train-Test Split
-    label_standard_data = pd.DataFrame(label_standard_data, columns=['city_development_index', 'gender',
-                                                                     'relevent_experience', 'enrolled_university',
-                                                                     'education_level', 'major_discipline',
-                                                                     'experience', 'company_size', 'company_type',
-                                                                     'last_new_job', 'training_hours', 'target'])
-    label_minmax_data = pd.DataFrame(label_minmax_data,
-                                     columns=['city_development_index', 'gender', 'relevent_experience',
-                                              'enrolled_university', 'education_level', 'major_discipline',
-                                              'experience', 'company_size', 'company_type', 'last_new_job',
-                                              'training_hours', 'target'])
-    label_robust_data = pd.DataFrame(label_robust_data,
-                                     columns=['city_development_index', 'gender', 'relevent_experience',
-                                              'enrolled_university', 'education_level', 'major_discipline',
-                                              'experience', 'company_size', 'company_type', 'last_new_job',
-                                              'training_hours', 'target'])
-    ordinal_standard_data = pd.DataFrame(ordinal_standard_data,
-                                         columns=['city_development_index', 'gender',
-                                                  'relevent_experience', 'enrolled_university', 'education_level',
-                                                  'major_discipline', 'experience', 'company_size', 'company_type',
-                                                  'last_new_job', 'training_hours', 'target'])
-    ordinal_minmax_data = pd.DataFrame(ordinal_minmax_data, columns=['city_development_index', 'gender',
-                                                                     'relevent_experience', 'enrolled_university',
-                                                                     'education_level', 'major_discipline',
-                                                                     'experience', 'company_size', 'company_type',
-                                                                     'last_new_job', 'training_hours', 'target'])
-    ordinal_robust_data = pd.DataFrame(ordinal_robust_data, columns=['city_development_index', 'gender',
-                                                                     'relevent_experience', 'enrolled_university',
-                                                                     'education_level', 'major_discipline',
-                                                                     'experience', 'company_size', 'company_type',
-                                                                     'last_new_job', 'training_hours', 'target'])
-    ls_X = label_standard_data.drop(labels="target", axis=1)
-    ls_y = label_standard_data["target"]
-    lm_X = label_minmax_data.drop(labels="target", axis=1)
-    lm_y = label_minmax_data["target"]
-    lr_X = label_robust_data.drop(labels="target", axis=1)
-    lr_y = label_robust_data["target"]
-    #
-    os_X = ordinal_standard_data.drop(labels="target", axis=1)
-    os_y = ordinal_standard_data["target"]
-    om_X = ordinal_minmax_data.drop(labels="target", axis=1)
-    om_y = ordinal_minmax_data["target"]
-    or_X = ordinal_robust_data.drop(labels="target", axis=1)
-    or_y = ordinal_robust_data["target"]
-
-
-    ##
-    # algorithm
-    ls_KNN = KNNClassifier(ls_X,ls_y)
-    lm_KNN = KNNClassifier(lm_X,lm_y)
-    lr_KNN = KNNClassifier(lr_X,lr_y)
-    os_KNN = KNNClassifier(os_X, os_y)
-    om_KNN = KNNClassifier(om_X, om_y)
-    or_KNN = KNNClassifier(or_X, or_y)
-
-    ls_decision = DecisionTree(ls_X, ls_y)
-    lm_decision = DecisionTree(lm_X, lm_y)
-    lr_decision = DecisionTree(lr_X, lr_y)
-    os_decision = DecisionTree(os_X, os_y)
-    om_decision = DecisionTree(om_X, om_y)
-    or_decision = DecisionTree(or_X, or_y)
-
-    ls_random= random_forest(ls_X, ls_y)
-    lm_random= random_forest(lm_X, lm_y)
-    lr_random = random_forest(lr_X, lr_y)
-    os_random= random_forest(os_X, os_y)
-    om_random= random_forest(om_X, om_y)
-    or_random = random_forest(or_X, or_y)
-
-
-    # compare
-    # compare = [ls_KNN,lm_KNN,lr_KNN,os_KNN,om_KNN,or_KNN,ls_decision,lm_decision,lr_decision,os_decision,om_decision,or_decision,ls_random,lm_random,lr_random,os_random,om_random,or_random]
-    # maxValue = compare[0]
-    # for i in range(1,len(compare)):
-    #     if maxValue < compare[i]:
-    #         maxValue = compare[i]
-    compare = {'ls_KNN':ls_KNN, 'lm_KNN':lm_KNN, 'lr_KNN':lr_KNN, 'os_KNN':os_KNN, 'om_KNN':om_KNN, 'or_KNN':or_KNN,
-               'ls_decision':ls_decision, 'lm_decision':lm_decision, 'lr_decision':lr_decision,'os_decision':os_decision, 'om_decision':om_decision,'or_decision':or_decision,
-               'ls_random':ls_random, 'lm_random':lm_random, 'lr_random':lr_random, 'os_random':os_random, 'om_random':om_random, 'or_random':or_random}
-
-    print("the highest accuracy")
-    print(max(compare, key=compare.get))
-    print(max(compare.values()))
-
-    return ls_X, ls_y
-    # importance_feature(ls_random, x_train, y_train)
-    # evaluation(ls_random, x_test, x_train, y_test, y_train, y_pred, model)
-
 def evaluation(x_test, x_train, y_test, y_train, y_pred, model):
-    print("Evaluation of ls_random")
+    print("Evaluation of algorithm")
     print(classification_report(y_test, y_pred))
     print("ROC AUC: ", roc_auc_score(y_test, y_pred))
     roc_curve_plot(y_test, model.predict_proba(x_test)[:, 1])
@@ -436,7 +437,7 @@ def evaluation(x_test, x_train, y_test, y_train, y_pred, model):
     CrossVal(model, x_test, y_test)
     StratKFold(model, x_test, y_test)
 
-    #Grid_Search(x_train, x_test, y_train, y_test)
+    Grid_Search(model, x_train, x_test, y_train, y_test)
 
 def importance_feature(ls_random, x_train, y_train):
     result = permutation_importance(ls_random, x_train, y_train, n_repeats=10, random_state=42)
@@ -456,22 +457,66 @@ def importance_feature(ls_random, x_train, y_train):
     plt.show()
 
 
+result_encode = encoding(result_en)
+scaled_data = scaling(result_encode, result_sc)
 
-X, y=open()
-#float -> int
-X = X.astype(int)
-y = y.astype(int)
+y = scaled_data["target"]
+X = scaled_data.drop(labels="target", axis=1)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=1)
+result_algorithm = result_al
 
-random_forest_model = RandomForestClassifier(max_depth=7, random_state=1)
-random_forest_model.fit(X_train, y_train)
-y_pred_random_forest = random_forest_model.predict(X_test)
-cm_random_forest = confusion_matrix(y_pred_random_forest, y_test)
-acc_random_forest = accuracy_score(y_test, y_pred_random_forest)
+if result_algorithm == "decision":
+    model = DecisionTreeClassifier()
+    # float -> int
+    X = X.astype(int)
+    y = y.astype(int)
 
-importance_feature(random_forest_model, X_train, y_train)
-evaluation(X_test, X_train, y_test, y_train, y_pred_random_forest, random_forest_model)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=4)
+    model.fit(X_train, y_train)
+    pred_model = model.predict(X_test)
+    accuracy_score(y_test, model.predict(X_test))
+elif result_algorithm == "random":
+    X = X.astype(int)
+    y = y.astype(int)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=4)
+
+    model = RandomForestClassifier(n_estimators=300, max_depth=10, random_state=22)
+    model.fit(X_train, y_train)
+    pred_model = model.predict(X_test)
+    cm_random_forest = confusion_matrix(pred_model, y_test)
+    acc_random_forest = accuracy_score(y_test, pred_model)
+    # print("Random Forest Confusion Matrix: ", cm_random_forest)
+    # print("Random Forest ACC: ", acc_random_forest)
+elif result_algorithm == "knn":
+    #float -> int
+    X = X.astype(int)
+    y = y.astype(int)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=4)
+    # Create a KNN classifier
+    model = KNeighborsClassifier(n_neighbors=3)
+    # Train the KNN classifier
+    model.fit(X_train, y_train)
+    # # Check accuracy of the model on the test data
+    # score = knn.score(X_test, y_test)
+    pred_model = model.predict(X_test)
+    accuracy_score(y_test, model.predict(X_test))
+
+
+importance_feature(model, X_train, y_train)
+evaluation(X_test, X_train, y_test, y_train, pred_model, model)
+
+# random_forest_model = RandomForestClassifier(max_depth=7, random_state=1)
+# random_forest_model.fit(X_train, y_train)
+# y_pred_random_forest = random_forest_model.predict(X_test)
+# cm_random_forest = confusion_matrix(y_pred_random_forest, y_test)
+# acc_random_forest = accuracy_score(y_test, y_pred_random_forest)
+#
+# importance_feature(random_forest_model, X_train, y_train)
+# evaluation(X_test, X_train, y_test, y_train, y_pred_random_forest, random_forest_model)
+
+
 # score_KNN = KNNClassifier(X,y)
 # print(score_KNN)
 #
