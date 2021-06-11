@@ -8,9 +8,9 @@
 
 
 
-Encoding includes label encoder and ordinary encoder.
-Scaling includes standard scaling, minmax scaling, and robustscaling.
-Algorithms include decision tree, random forest, and knn.
+* Encoding includes label encoder and ordinary encoder.
+  Scaling includes standard scaling, minmax scaling, and robustscaling.
+  Algorithms include decision tree, random forest, and knn.
 
 Used Methods : cal_score, encoding, scaling, algorithmmethod, DecisionTree, random_forest, KNNClassifier
 
