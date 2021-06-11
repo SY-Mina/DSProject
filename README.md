@@ -6,10 +6,11 @@
 
 : combination of numerical data scaling and categorical data encoding for a machine learning algorithm
 
-* use (Input)
-  ![image](https://user-images.githubusercontent.com/69418829/121663500-725bc000-cae1-11eb-981f-2caaa1494d24.png)
+* use (Input) <br>
+ ![image](https://user-images.githubusercontent.com/69418829/121663500-725bc000-cae1-11eb-981f-2caaa1494d24.png)
 
-* result (Output)
+* result (Output) <br>
+![image](https://user-images.githubusercontent.com/69418829/121663962-f1e98f00-cae1-11eb-9ce8-2e3682de62e2.png)
   
 
 * Encoding includes label encoder and ordinary encoder.
