@@ -10,7 +10,7 @@
  ![image](https://user-images.githubusercontent.com/69418829/121663500-725bc000-cae1-11eb-981f-2caaa1494d24.png)
 
 * result (Output) <br>
-![image](https://user-images.githubusercontent.com/69418829/121663962-f1e98f00-cae1-11eb-9ce8-2e3682de62e2.png)
+![image](https://user-images.githubusercontent.com/69418829/121664178-2b21ff00-cae2-11eb-96d9-ce2d379059b1.png)
   
 
 * Encoding includes label encoder and ordinary encoder.
