@@ -13,6 +13,7 @@
   Algorithms include decision tree, random forest, and knn.
 
 * Used Methods : cal_score, encoding, scaling, algorithmmethod, DecisionTree, random_forest, KNNClassifier
+* Method Details
 
 
 | **Method**                             | **Description**                                              |
